@@ -29,8 +29,8 @@ Tasks that can be performed in parallel gain huge performance this way. GBAdhoc 
 
 The lesson is to think in terms of pipelines, not functions. The ME is very useful when it can perform substantial work that is decoupled from Allegrex's immediate task. mcidclan's [Media Engine custom core](https://github.com/mcidclan/psp-media-engine-custom-core) is currently the most useful library for providing access to the ME.
 
-A research note: Sony's own PS1 emulator, POPS, has an even further optimised system that is not well understood yet at the time of writing (8 OCT 2026). Rather than periodically sending audio mixing jobs to the ME, POPS runs the PS1's entire SPU emulator on the ME. The ME independently generates 44,100 stereo samples per second, emulating 24 ADPCM voices and audio processing. Allegrex maintains the emulated SPU's register interface and communicates changes through shared memory, leaving the ME to advance the audio subsystem.
-The key is persistent ownership. Instead of repeatedly transferring responsibility between processors, one processor owns a subsystem and the other communicates with it through small, carefully synchronised state updates.
+A research note: Sony's own PS1 emulator, POPS, has an even further optimised system that is not well understood yet at the time of writing (8 OCT 2026).
+Rather than periodically sending audio mixing jobs to the ME, POPS runs the PS1's entire SPU emulator on the ME. The ME independently generates and processes SPU audio while Allegrex maintains the emulated SPU's register interface, and communicates changes through shared memory. The ME can advance the audio subsystem itself.
 
 This architecture can be applicable beyond audio, particularly to emulators whose original hardware contains independent processors or peripherals. However, it demands careful management. Further disassembly of POPS is required to understand how Sony actually did it - and doing so could benefit the whole scene! - but the idea can be experimented with today. The only public documentation is on [PS Dev Wiki](https://www.psdevwiki.com/psp/POPS).
 
