@@ -7,4 +7,4 @@ My writings are completely open to use. There is no licence or restriction on ho
 Thank you to everyone who has helped me and contributed knowledge along the way. I hope that this motivates new developers to produce better PSP software and, even moreso - to engage with us and build a smarter, kinder community.
 Credit this repository if you found it helpful, so that other developers may find it too.
 
-Currently, the only document is [optimisation.md](https://github.com/themriron2/optimisation.md). Feel free to download it and use it in your projects.
+Currently, the only document is [optimisation.md](https://github.com/themriron2/psp-survival-guide/optimisation.md) ([HTML version](https://themriron2.github.io/psp-survival-guide/optimisation.html)). Feel free to download it and use it in your projects.
