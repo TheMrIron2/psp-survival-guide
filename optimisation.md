@@ -10,10 +10,10 @@ From my experience, and from what I see of recent ports, LLMs make several core 
 As any quick search will tell you, the PSP has a 333MHz MIPS CPU called Allegrex, 32 / 64MB RAM and a GPU called the GE with 2MB RAM. Both GE and bus are clocked at exactly half the CPU speed, so at 333MHz, bus and GPU are 166MHz.
 
 Or is that really it? The PSP has several other hardware features that LLMs are typically not aware of.
-1. VRAM is actually increased to 4MB on PSP-2000 onwards, coinciding with the doubling of main RAM to 64MB.
+1. VRAM is actually increased to 4MB on PSP-2000 onwards, coinciding with the doubling of main RAM to 64MB. This can be [accessed by homebrew](https://github.com/mcidclan/psp-undocumented-sorcery/tree/main/edram-0x400000) and apps like DaedalusX64 and OOT-psp do so.
 2. The PSP has a second 333MHz CPU called the Media Engine. This is effectively the same chip as Allegrex, except without a VFPU. It has its own 2MB (PSP-1000) / 4MB (PSP-2000+) RAM.
 3. Within the ME, there is a chip called the Virtual Mobile Engine (VME). This is taken directly from Sony's early 2000s Walkmans; it is a reprogrammable and highly efficient chip.
-4. The PSP also has 16KB of scratchpad. However, this is probably useless. It is only situationally faster than main RAM and homebrew developers have never found a good use for it. It's not impossible that a use will be discovered for it, but at the moment, it's considered not useful.
+4. The PSP also has 16KB of scratchpad (SRAM). This can be used to modestly alleviate CPU cache pressure but should be treated situationally.
 5. The PSP also has encryption and cryptography hardware called Kirk and Spock, after Star Trek. This is useful if you are hashing, eg. SHA1, and is nicer than a CPU implementation in software.
 6. The PSP's VFPU is essential to good 3D performance. It performs T&L operations up to 8x faster than the CPU alone, and is well documented with a wide range of features.
 
@@ -45,6 +45,14 @@ The VME is only recently becoming understood, but it's a very versatile chip. It
 This is not an exhaustive set of uses for the VME and it is still very much experimental. The primary problem is locality; the VME is not going to perform these arbitrary operations faster than equivalents on the VFPU, even if it is faster than the ME in scalar. It will therefore accelerate ME operations well, but is an unintuitive solution for tasks that are on the Allegrex side. It may provide an excellent playground for a developer eager to try and accelerate ME code or find new hardware solutions. His [VME samples](https://github.com/mcidclan/psp-virtual-mobile-engine-ext) are available here.
 
 Please additionally refer to mcidclan's [excellent technical investigation](https://github.com/mcidclan/psp-media-engine-cracking-the-unknown/blob/main/the-psp-virtual-mobile-engine/the-virtual-mobile-engine.md) of the chip's specifics, which is the basis for most of our current knowledge.
+
+## Scratchpad
+
+The PSP's 16KB scratchpad (SRAM) has historically been ignored by homebrew developers, and for good reason. TyRaNiD's Naked PSP presentation from 2006 calls it "pretty useless" without elaboration, and you will find it is only situationally faster than main RAM.
+
+It is so poorly documented that, until 2026, PSPSDK had a bug where it was assumed you needed `THREAD_ATTR_SCRATCH_SRAM` to access it. This attribute never existed in any firmware. Calling it will return an invalid attribute error. This was just a homebrew bug that existed since [2005](https://lukasz.dk/mirror/forums.ps2dev.org/viewtopic0c6f.html?t=3452), erroneously added to PSPSDK and fell under the radar for 21 years because few people ever tried it. Ignore this attribute and write directly to [0x100000](https://lukasz.dk/mirror/forums.ps2dev.org/viewtopic6167.html?t=12125).
+
+The answer is simply because it's nearly impossible to find a good use for it. Nearly! [Animal Forest](https://github.com/bruder-grimm/animal_forest_psp/blob/main/runtime/src/spram.c) and [Star Fox 64](https://github.com/TheMrIron2/sf64-psp/commit/a0a71aefcc6756de41a4200789b0ed8911e531e0) have used it to alleviate instruction cache pressure, which produces in Star Fox's case about 2% faster performance by placing a few KB of functions in SRAM. It was slower in every test as a data cache substitute. I would recommend only using this if you are noticing icache pressure and want to earn a small performance gain, or would like to experiment with using it.
 
 ## VFPU
 
