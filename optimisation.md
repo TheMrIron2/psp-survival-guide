@@ -92,7 +92,7 @@ Related to this cache sensitivity, don't assume that `-O3` or `-Os` are the fast
 
 ## Textures
 
-Choosing the right texture format can be a significant factor in performance. The PSP is not especially fast at moving data around; optimising the format can avoid a lot of stalls. CLUT4 and CLUT8 are useful for reducing the footprint of textures. Keep them small and lower bit depth where possible! Format switching for textures is basically free.
+Choosing the right texture format can be a significant factor in performance. The PSP is not especially fast at moving data around; optimising the format can avoid a lot of stalls. CLUT4 and CLUT8 are useful for reducing the footprint of textures. Keep them small and lower bit depth where possible! Format switching for textures is basically free. Combine this with native vertex formats, ideally not converted at runtime.
 
 Swizzle your textures. **Always**. There's no reason not to - it significantly improves the speed at which the PSP can move and operate on them for free. The PSP can read textures from main memory fast, so don't try and stuff the already small VRAM with textures. Find a good sized texture cache - you'll probably need to experiment for the right number - and allow the code to decide. 
 
@@ -102,13 +102,13 @@ The PSP does not like indexed work. Indexed geometry is slower on PSP than non-i
 
 ## High Performance GE Design
 
-Hrydgard documented a technique used by commercial developers who wanted to maximise the PSP's GPU capabilities that he calls the "double buffer command list" approach. The idea is simple; while the GE draws, the Allegrex is already preparing the next frame. An SDK example of this technique can be [found here](https://github.com/pspdev/pspsdk/blob/master/src/samples/gu/doublelist/doublelist.c).
+Hrydgard documented a technique used by commercial developers who wanted to maximise the PSP's GPU capabilities that he calls the "double buffer command list" approach. The idea is simple; while the GE draws, the Allegrex is already preparing the next frame. An SDK example of this technique can be [found here](https://github.com/pspdev/pspsdk/blob/master/src/samples/gu/doublelist/doublelist.c). You will lose 1 frame of latency this way, due to the structure of this approach, but it enables more concurrent operation between CPU and GPU and thus better performance in CPU-intensive games.
 
-You will lose 1 frame of latency this way, due to the structure of this approach, but it enables more concurrent operation between CPU and GPU and thus better performance in CPU-intensive games.
+He also warns against triangle strips, save for heavy geometry, as smaller strips are penalised on PSP. If you're writing raw display lists, you can just write PRIM commands sequentially without re-specifying the vertex buffer pointer and it will auto-increment, which is a useful trick. His "Tips for developing for the PSP" document is the source of that particular trick and elaborates on it slightly - it can be used for indexed draws too but as discussed earlier indexed work should be treated sceptically.
 
 ## Debugging
 
-Use the full set of debugging tools available to you. [PSPDEV](https://pspdev.github.io/debugging.html) has resources on PSPLink, gprof and GDB.
+Use the full set of debugging tools available to you. [PSPDEV](https://pspdev.github.io/debugging.html) has resources on PSPLink, gprof and GDB. PPSSPP's GE debugger is also very useful for finding graphical issues.
 
 PSPLink is the obvious pick for real-time testing; you can set `profmode t` for hardware counters too. `psp-gprof` is very useful for finding hot functions and attacking them. Ensure you use it right! Regular `gprof` can get symbols muddled.
 
