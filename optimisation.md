@@ -112,7 +112,9 @@ The PSP does not like indexed work. Indexed geometry is slower on PSP than non-i
 
 Hrydgard documented a technique used by commercial developers who wanted to maximise the PSP's GPU capabilities that he calls the "double buffer command list" approach. The idea is simple; while the GE draws, the Allegrex is already preparing the next frame. An SDK example of this technique can be [found here](https://github.com/pspdev/pspsdk/blob/master/src/samples/gu/doublelist/doublelist.c). You will lose 1 frame of latency this way, due to the structure of this approach, but it enables more concurrent operation between CPU and GPU and thus better performance in CPU-intensive games.
 
-He also warns against triangle strips, save for heavy geometry, as smaller strips are penalised on PSP. If you're writing raw display lists, you can just write PRIM commands sequentially without re-specifying the vertex buffer pointer and it will auto-increment, which is a useful trick. His "Tips for developing for the PSP" document is the source of that particular trick and elaborates on it slightly - it can be used for indexed draws too but as discussed earlier indexed work should be treated sceptically.
+He also warns against triangle strips, save for heavy geometry, as smaller strips are penalised on PSP. If you're writing raw display lists, you can just write PRIM commands sequentially without re-specifying the vertex buffer pointer and it will auto-increment, which is a useful trick. His "Tips for developing for the PSP" document is the source of that particular trick and elaborates on it slightly - it can be used for indexed draws too but as discussed earlier indexed work should be treated sceptically. In his words; "Avoid index buffers, use sequences of strips, use [MeshOptimizer](https://github.com/zeux/meshoptimizer) to split your meshes into strips optimally."
+
+The GE does support 4 hardware lights, but they are costly. Each additional light adds per-vertex costs, but it's much, much faster than doing lighting on the CPU, even with VFPU.
 
 ## Debugging
 
