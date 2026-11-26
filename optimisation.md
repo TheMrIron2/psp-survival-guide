@@ -81,6 +81,27 @@ This technique typically improves performance but is workload dependent. Daedalu
 
 You can read this [VFPU memcpy](https://github.com/DaedalusX64/daedalus/blob/master/Source/SysPSP/Utility/FastMemcpyPSP.cpp) code here.
 
+## Precision
+
+The PSP has hardware support for single precision floats via Allegrex's FPU and the VFPU. However, it does not support double-precision maths. Double-precision arithmetic has to be performed in software and can be an enormous silent tax.
+
+This is particularly important when porting code from other platforms. Operations that were inexpensive on other platforms can become a major bottleneck on PSP. Be aware of implicit promotion to double precision where this can sneak in:
+
+```
+float a = sin(x);
+float b = x * 0.123;
+
+// Prefer single precision where appropriate:
+float a = sinf(x);
+float b = x * 0.123f;
+```
+
+A real world example of this from Star Fox 64; Andross's brain drew 30 tentacles, each comprised of 10 segments, and calculates a sine wave for each segment's rotation. This is just 300 sine calculations per routine, but despite an optimised VFPU maths library and GU renderer, this scene's performance tanked. 
+
+The cause was libultra's sine implementation - `sinf()` accepts and returns a float but it is evaluated as doubles. The full 300 calculations wasted 6.63ms of CPU time. Replacing this with a hardware-accelerated sine approximation improved framerate from 31.7FPS to 38.7FPS. Performance increased 22% just by changing the precision of one operation. This makes mathematical accuracy an extremely insidious source of performance debt when porting code from other platforms as it is often invisible. Use hardware-accelerated singles whenever appropriate.
+
+This is an important lesson; before you try elaborate optimisations, first make sure your code is not emulating maths it doesn't have to!
+
 ## APIs
 
 PSPGL is a good choice when porting software to the PSP. It is a quite compact implementation of OpenGL ES 1.1 that sends commands straight to GE. In frontend-heavy programs, expect a penalty compared to GU of ~10% or more, but this is not scientific and heavily variable. A good PSPGL backend is better than a naive GU one.
