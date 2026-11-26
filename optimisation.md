@@ -102,6 +102,12 @@ The cause was libultra's sine implementation - `sinf()` accepts and returns a fl
 
 This is an important lesson; before you try elaborate optimisations, first make sure your code is not emulating maths it doesn't have to!
 
+### Preventing Double Precision
+
+I recommend you add `-Wdouble-promotion` and `-Wfloat-conversion` to your Makefile flags to safeguard against doubles. Something as innocuous as multiplying by `2.0` instead of `2.0f` can force the PSP to take a slow software path. Modern programmers are often not used to processors that lack hardware double precision, so this is important. Note also that these flags will catch most but not all cases of doubles, and some doubles may be necessary, so consider it useful but not a solution. (Thanks to hrydgard for this tip!)
+
+For trigonometry, you should use the VFPU's native `vsin`, `vcos`, `vrot` and `vasin` instructions where you can. The VFPU considers a full rotation to be 4.0, rather than 2π radians or 360 degrees, so convert your inputs and inverse-trigonometric outputs accordingly.
+
 ## APIs
 
 PSPGL is a good choice when porting software to the PSP. It is a quite compact implementation of OpenGL ES 1.1 that sends commands straight to GE. In frontend-heavy programs, expect a penalty compared to GU of ~10% or more, but this is not scientific and heavily variable. A good PSPGL backend is better than a naive GU one.
